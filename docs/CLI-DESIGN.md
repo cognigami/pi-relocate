@@ -1,17 +1,20 @@
 # CLI design
 
-Status: proposed UX for agreement. Implements the scope in `CONTRACT.md`; no
-implementation or real relocation is authorized by this draft.
+Status: implemented relocation UX, with an operator-requested explicit recovery
+cleanup addition. Implements the scope in `CONTRACT.md`; actual relocations
+still require separate operator authorization.
 
 ## Command
 
 ```text
 relo [--dry-run] SOURCE DESTINATION
+relo cleanup [--dry-run] PROJECT_OR_RECOVERY_DIRECTORY
 relo --help
 ```
 
-One checkout per invocation. No subcommands, project registry, workspace creation,
-or extension-management commands.
+One checkout per relocation invocation. Cleanup selects one retained recovery
+directory. No project registry, workspace creation, or extension-management
+commands.
 
 Example, run from outside both checkouts:
 
@@ -111,13 +114,44 @@ acceptance under the contract remains pending until the rebuild and interactive
 checks succeed; the CLI must not claim automatic index rebuilding or fully
 verified extension behavior.
 
+## Explicit recovery cleanup
+
+`relo cleanup perry` selects the recovery directory whose map records an original
+checkout basename of `perry`. It does not match destination ancestors or delete
+all family members. A name matching several relocations is refused with the
+matching paths; an exact recovery directory name or path disambiguates.
+`relo cleanup --dry-run perry` prints the scope without writes. The leading
+`relo --dry-run cleanup perry` spelling is also accepted.
+
+Only `relo-recovery-<digits>` directories directly under the default agent root
+are eligible. Parse the existing quoted checkout line in `RECOVERY.md`; add no
+registry or completion journal. The map is a pre-move plan, so cleanup must not
+infer successful relocation from its presence. The operator authorizes deletion
+only after acceptance or completed recovery.
+
+Validate the selected map and flat numbered-original layout. Reject symlinked
+paths, special files, nested directories, and unexpected entries. Revalidate the
+inventory before mutation; remove originals first, the map last, then the empty
+directory. Pin the selected directory with `os.Root` and check its identity so a
+replacement pathname cannot redirect deletion. Do not recursively sweep a
+directory or follow paths from the map for
+deletion. Never touch live sessions, checkouts, indexes, configuration, or
+separately created backups. No index rebuild is needed after cleanup.
+
+Like relocation, cleanup has no confirmation prompt or redundant `--yes` flag.
+Print the selected directory and recorded checkout paths, warn about permanent
+loss of rollback copies, and report success or partial deletion truthfully.
+There is no relocation/index reminder on cleanup success. It is an independent,
+explicit deletion operation, not automatic post-relocation housekeeping.
+
 ## Errors and exit status
 
-- Exit 0: preview validated, or the durable relocation stage completed. For an
+- Exit 0: preview validated, recovery cleanup completed, or the durable relocation
+  stage completed. For an
   actual move this does not claim the manual index/acceptance steps are complete;
   the output explicitly identifies them as pending.
-- Exit 1: invalid invocation, refusal, failed relocation, or failed durable-file
-  verification.
+- Exit 1: invalid invocation, refusal, failed relocation/cleanup, or failed
+  durable-file verification.
 
 Before-mutation failures say `No changes made` only when that is true. Failures
 after mutation identify completed steps, current checkout/session locations,

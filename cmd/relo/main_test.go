@@ -27,6 +27,10 @@ func TestRunHelpAndUsage(t *testing.T) {
 		{"source", "--dry-run"}, {"--help", "destination"}, {"--dry-run"},
 		{"--dry-run", "--help"}, {"--dry-run", "source", "destination", "extra"},
 		{"--dry-run", "-source", "destination"}, {"--", "source", "destination"},
+		{"cleanup"}, {"cleanup", ""}, {"cleanup", "--dry-run"},
+		{"cleanup", "--unknown"}, {"cleanup", "perry", "extra"},
+		{"cleanup", "--dry-run", "perry", "extra"},
+		{"--dry-run", "cleanup", "--dry-run", "perry"},
 	} {
 		t.Run(fmt.Sprintf("%q", args), func(t *testing.T) {
 			var out, diagnostic bytes.Buffer

@@ -59,7 +59,7 @@ func (p *Plan) Execute(w io.Writer) (result error) {
 	if err := os.MkdirAll(recoveryParent, 0700); err != nil {
 		return err
 	}
-	recovery, err = os.MkdirTemp(recoveryParent, "relo-recovery-")
+	recovery, err = os.MkdirTemp(recoveryParent, recoveryPrefix)
 	if err != nil {
 		return err
 	}

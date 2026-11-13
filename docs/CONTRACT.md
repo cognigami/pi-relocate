@@ -167,6 +167,21 @@ failure, report what completed, where the recoverable data is, and what remains
 to restore or finish. Do not report success for a partially relocated project.
 No general transaction framework is required by this contract.
 
+### Operator-authorized recovery cleanup
+
+After accepting a successful move (or completing recovery), the operator may
+explicitly discard the retained rollback originals using `relo cleanup`.
+Select one recovery directory by a unique original checkout basename or its
+exact directory name/path; refuse ambiguous names and support a read-only
+preview. Delete only recognized recovery files inside that directory, never
+live checkout/session data or external paths recorded in the map. Unknown
+contents and symlinked recovery layouts are refused. A pre-move recovery map
+is not a completion record: the tool cannot infer acceptance and must warn
+that deletion removes the ability to restore those originals. There is no
+automatic cleanup, project registry, or general recovery-management service.
+Concurrent writers or renames of the selected recovery files/directory are
+unsupported; cleanup is not an adversarial filesystem security boundary.
+
 ## Verification of success
 
 Verify that:

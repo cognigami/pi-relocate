@@ -1,8 +1,9 @@
 # relo execution plan
 
-Status: implementation authorized by the operator; real-project relocation is
-not authorized. Implementation steps 1–6 are complete and fixture-validated,
-subject to the explicit validation limit below. Step 7 remains operator-controlled.
+Status: implementation steps 1–6 are complete and fixture-validated, subject to
+the explicit validation limit below. The operator separately authorized and ran
+step 7 for Perry and Engine1, then confirmed existing conversations resume in
+both destinations. Explicit recovery cleanup is an operator-requested follow-up.
 
 Sources of truth: `CONTRACT.md` and `CLI-DESIGN.md`. Implement in Go, with the
 standard library unless an established requirement proves it insufficient.
@@ -311,6 +312,33 @@ Installed-source compatibility evidence (read-only inspection):
   are therefore reported and refused, not silently rewritten. Historical
   subagent receipts remain unchanged as required.
 
-No real Perry/Engine1 checkout, real conversations, derived index, broker,
-sockets, external configuration, or installed package was changed. Step 7 still
-requires separate authorization, index rebuilding, and interactive acceptance.
+During the original fixture-only implementation, no real Perry/Engine1 checkout,
+real conversations, derived index, broker, sockets, external configuration, or
+installed package was changed. Step 7 required separate authorization, index
+rebuilding, and interactive acceptance.
+
+## Operator acceptance and cleanup follow-up
+
+The operator subsequently ran reviewed previews and actual relocations in the
+required order: Perry to `perry/root`, then Engine1 to `perry/engine1`. Both CLI
+runs reported successful durable verification; the operator confirmed existing
+conversations resume in both destinations. Index rebuilding remains manual.
+Mini's local selector and staging path were separately updated for `perry/root`,
+without changing its remote working directory. A short README quick-start was
+added.
+
+The operator explicitly requested `relo cleanup perry` after acceptance. This
+extends the original no-subcommands CLI with one narrow recovery-deletion
+operation, specified in `CLI-DESIGN.md` and `CONTRACT.md`. It selects a unique
+original checkout basename from existing recovery maps, or one exact recovery
+directory; no registry or completion metadata is introduced. CLI tests exercise
+cleanup after a real fixture relocation (including backed-up external inbound
+references), dry-run immutability, name ambiguity/disambiguation, unexpected
+entries/symlinks, storage restrictions, inventory changes, and partial deletion.
+The legacy map format and empty-original backup sets are covered separately.
+Feature development does not delete any real recovery copies. Build, focused
+lint, and the full test suite pass; the existing cross-device integration test
+remains skipped because a second mounted device is unavailable. Review prompted
+pinned-directory deletion and an injected directory-replacement regression test.
+As with relocation, concurrent filesystem mutation is unsupported; cleanup does
+not claim to be an adversarial filesystem security boundary.

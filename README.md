@@ -6,6 +6,7 @@ The command is `relo`; this repository remains `pi-relocate`.
 
 ```text
 relo [--dry-run] SOURCE DESTINATION
+relo cleanup [--dry-run] PROJECT_OR_RECOVERY_DIRECTORY
 relo --help
 ```
 
@@ -27,7 +28,8 @@ usage errors, refusals, failures, or failed verification.
    (any checkout using the same default storage). In each destination, use
    `pi -r` to resume an existing conversation and confirm its working directory.
 6. Adjust reported external configuration separately. Keep backups and printed
-   recovery copies until the result is accepted.
+   recovery copies until the result is accepted; then preview and remove them with
+   `relo cleanup --dry-run PROJECT` and `relo cleanup PROJECT`.
 
 For the family layout below, move `perry` to `perry/root` **before** moving
 Engine1 to `perry/engine1`. Build with `just build`; the executable is `bin/relo`.
@@ -184,6 +186,45 @@ With affected processes stopped:
    instead, finish metadata/configuration deliberately from the saved map and
    verify the result before rebuilding the index. There is no resume command or
    automatic cleanup service. Recovery-copy deletion is an operator decision.
+
+## Cleanup recovery copies
+
+After rebuilding the index and successfully resuming existing conversations,
+with no process writing, moving, or replacing the selected recovery directory:
+
+```sh
+relo cleanup --dry-run perry
+relo cleanup perry
+relo cleanup --dry-run engine1
+relo cleanup engine1
+```
+
+The project selector is the **original checkout basename** recorded in
+`RECOVERY.md`, not the destination's name or a family-wide selector. For example,
+`perry` matches the move from `perry` to `perry/root`, not the Engine1 move.
+A name must identify exactly one recovery directory. If several attempts or
+checkouts share that name, the command refuses and lists matching directories.
+Select one by its exact directory name or path instead:
+
+```sh
+relo cleanup --dry-run relo-recovery-2059027810
+relo cleanup /Users/ricardo/.pi/agent/relo-recovery-2059027810
+```
+
+Deletion is restricted to a recognized `relo-recovery-<digits>` directory directly
+under the default `~/.pi/agent` directory. It removes only numbered original
+`.jsonl` files and `RECOVERY.md`; unexpected entries, symlinks, and nested
+subdirectories are refused. No live checkout, session bucket, sidecar, index,
+external configuration, or separately created backup is deleted. Cleanup does
+not require another index rebuild.
+
+There is no confirmation prompt: the actual cleanup command authorizes permanent
+deletion of that directory's rollback copies, including original external
+inbound-reference files. There is nothing else to save after acceptance unless
+you want to retain the ability to undo the move. **The map is not proof of a
+successful move**; do not clean up a failed relocation until recovery is complete.
+Cleanup revalidates the selected files before deleting. A deletion failure may
+leave a partially cleaned directory and is reported as such, not as success.
 
 ## Development and fixture evidence
 
